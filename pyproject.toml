@@ -1,0 +1,130 @@
+[build-system]
+# Building system requirements, and backend selection
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+# Project requirements, dependencies, and metadata
+requires-python = ">= 3.11"
+dependencies = [
+    "numpy"
+]
+
+# Project general information
+name = "pyarmm"
+version = "0.0.1"
+authors = [
+    { name = "Yaidel" },
+]
+description = "This is a protocol for the automatic search of fluorescent mutants of rhodopsins"
+readme = { file = "README.md", content-type = "text/markdown"}
+license = { file = "LICENSE" }
+classifiers = [
+    "License :: AGPL-3.0-or-later",
+    "Programming Language :: Python :: 3",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Computational Chemistry"
+]
+
+[tool.setuptools]
+# By default, include-package-data is true in pyproject.toml, but anyways
+include-package-data = true
+
+# Define the folders and rules to search for the files to be packaged
+[tool.setuptools.packages.find]
+where = ["src"]  # list of folders that contain the packages (["."] by default)
+include = ["*"]  # package names should match these glob patterns (["*"] by default)
+exclude = ["test*"]  # exclude packages matching these glob patterns (empty by default)
+namespaces = true  # to disable scanning PEP 420 namespaces (true by default)
+
+# In addition to .py files, also include in the build the following files, which are needed
+[tool.setuptools.package-data]
+pyarmm = ["*.json", "*.pyx", "py.typed"]
+
+# PyTest Configuration
+[tool.pytest.ini_options]
+addopts = "--strict-markers --cov"
+xfail_strict = true
+testpaths = [
+    "test",
+]
+
+# PyTest Coverage.py Configuration
+[tool.coverage.run]
+branch = true
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+[tool.coverage.paths]
+source = [
+    "src/pyarmm/",
+    "*/site-packages/pyarmm/",
+]
+
+# MyPy configuration - checks for type safety - env defined with tox (see below)
+[tool.mypy]
+python_version = 3.11
+warn_unused_configs = true
+show_error_context = true
+pretty = true
+namespace_packages = true
+check_untyped_defs = true
+
+# Black configuration - Unify Code Format - env defined with tox (see below)
+[tool.black]
+line-length = 120
+target-version = ["py311", "py312", "py313"] # These need to coincide with those in the envlist of tox
+
+# Flake8 configration - Linting - env defined with tox (see below)
+[tool.flake8]
+max-line-length = 120
+per-file-ignores = [
+    '__init__.py:F401',
+]
+
+# Configuration for tox
+[tool.tox]
+legacy_tox_ini = """
+    [tox]
+    isolated_build = True
+    envlist =
+            py313
+            py312
+            py311
+
+    [testimports]
+    deps =
+         pytest
+         pytest-cov
+         pytest-randomly
+
+    [testenv]
+    deps =
+         {[testimports]deps}
+    commands =
+         pytest {posargs}
+
+    [testenv:typecheck]
+    deps =
+         mypy
+         pytest
+    commands =
+         mypy --ignore-missing-imports {posargs:src test}
+
+    [testenv:format]
+    skip_install = True
+    deps =
+         black
+    commands =
+         black {posargs:--check --diff src test}
+
+    
+    [testenv:lint]
+    skip_install = True
+    deps =
+         flake8
+         flake8-bugbear
+         flake8-pyproject
+    commands =
+         flake8 {posargs:src test}
+"""
