@@ -1,4 +1,10 @@
-from importlib import metadata
+from importlib.metadata import version, PackageNotFoundError
 
 __all__ = ["deps, armmodel"]
-__version__ = metadata.version('pyarmm')
+
+try:
+    __version__ = version("pyarmm")
+except PackageNotFoundError:
+    # package is not installed
+    pass
+

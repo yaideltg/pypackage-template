@@ -1,6 +1,6 @@
 [build-system]
 # Building system requirements, and backend selection
-requires = ["setuptools>=64", "wheel"]
+requires = ["setuptools>=64", "setuptools-scm>=8", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -12,7 +12,7 @@ dependencies = [
 
 # Project general information
 name = "pyarmm"
-version = "0.0.1"
+dynamic = ["version"] # dynamic version fetching from Git tags using setuptools-scm
 authors = [
     { name = "Yaidel" },
 ]
@@ -25,6 +25,8 @@ classifiers = [
     "Intended Audience :: Science/Research",
     "Topic :: Scientific/Engineering :: Computational Chemistry"
 ]
+
+[tool.setuptools_scm] # can be empty if no extra settings are needed, presence enables setuptools-scm
 
 [tool.setuptools]
 # By default, include-package-data is true in pyproject.toml, but anyways
