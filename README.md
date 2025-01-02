@@ -23,6 +23,44 @@ The package should be developed under a [virtual environment](https://docs.pytho
 
 For testing and compatibility we are using the last three versions of Python 3: `3.11`, `3.12`, and `3.13`. These are recommended to be managed by `asdf`.
 
+## Single-sourcing the Project Version
+
+As of the time of writing, there is no standardization on how to manage the packages version in a single place. See [Single-sourcing the Project Version](https://packaging.python.org/en/latest/discussions/single-source-version/) in the Python Packaging User Guide.
+
+We normally would have to manually update in each new release the version number in the following places: `pyproject.toml` file, package's `__init__.py`, and Git tag in case we are using them in the CI/CD workflows.
+
+Evidently, there are several workarounds to this. The one currently proposed by the Python "authorities" is using [setuptools-scm](https://setuptools-scm.readthedocs.io/en/latest/). With it, we only need to worry about the Git tags (`v0.1.0` for example), and all other places get updated dynamically.
+
+We need to include the following configuration in the `pyproject.toml` file:
+
+``` python
+[build-system]
+requires = ["setuptools>=64", "setuptools-scm>=8"]
+...
+
+[project]
+# Important: Remove any existing version declaration
+# version = "0.0.1"
+dynamic = ["version"]
+...
+
+[tool.setuptools_scm] # can be empty if no extra settings are needed, presence enables setuptools-scm
+```
+
+And then the following snippet in the package's `__init__.py` file:
+
+``` python
+from importlib.metadata import version, PackageNotFoundError
+
+try:
+    __version__ = version("package-name") # replace package-name with the actual name of the package 
+except PackageNotFoundError:
+    # package is not installed
+    pass
+```
+
+With this configuration we only have to worry about updating the Git tags for each release, and it will do the heavy lifting for us.
+
 ## Development workflow
 
 The bare bones structure of the package is as follows:
